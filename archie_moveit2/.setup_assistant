@@ -1,0 +1,26 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: archie_description
+    relative_path: urdf/manipulator_main.xacro
+    xacro_args: ee_marker:=true
+  srdf:
+    relative_path: config/archie.srdf
+  package_settings:
+    author_name: David Torres
+    author_email: davidtorrest1097@gmail.com
+    generated_timestamp: 1774382127
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity

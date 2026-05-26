@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="manipulator_gazebo" params="prefix">
+
+    <gazebo reference="${prefix}link_1">
+      <selfCollide>true</selfCollide>
+      <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="${prefix}link_2">
+      <selfCollide>true</selfCollide>
+      <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="${prefix}link_3">
+      <selfCollide>true</selfCollide>
+      <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="${prefix}link_4">
+      <selfCollide>true</selfCollide>
+      <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="${prefix}link_5">
+      <selfCollide>true</selfCollide>
+      <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="${prefix}link_6">
+      <selfCollide>true</selfCollide>
+    </gazebo>
+
+    <ros2_control name="GazeboSystem" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+
+      <joint name="${prefix}joint_1">
+        <command_interface name="position">
+          <param name="min">-1.57</param>
+          <param name="max">1.57</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+
+      <joint name="${prefix}joint_2">
+        <command_interface name="position">
+          <param name="min">-0.78</param>
+          <param name="max">0.78</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      
+      <joint name="${prefix}joint_3">
+        <command_interface name="position">
+          <param name="min">-1.15</param>
+          <param name="max">2.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+
+      <joint name="${prefix}joint_4">
+        <command_interface name="position">
+          <param name="min">-3.14</param>
+          <param name="max">3.14</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+
+      <joint name="${prefix}joint_5">
+        <command_interface name="position">
+          <param name="min">-1.15</param>
+          <param name="max">2.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+
+      <joint name="${prefix}joint_6">
+        <command_interface name="position">
+          <param name="min">-3.14</param>
+          <param name="max">3.14</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+
+      <xacro:if value="$(arg gripper)">
+        <joint name="garra1_joint">
+          <command_interface name="position">
+            <param name="min">-0.02</param>
+            <param name="max">0</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+        </joint>
+      </xacro:if>
+
+    </ros2_control>
+
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find archie_description)/config/ros2_controllers.yaml</parameters>
+      </plugin>
+      <plugin
+        filename="gz-sim-label-system"
+        name="gz::sim::systems::Label">
+      </plugin>
+    </gazebo>
+
+  </xacro:macro>
+</robot>
