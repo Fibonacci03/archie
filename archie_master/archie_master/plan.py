@@ -111,44 +111,62 @@ class PlanNode(Node):
             waypoints.append(copy.deepcopy(wpose))
         return waypoints, wpose
 
-    # Copa del Mundo (Figura Compleja)
-    def world_cup(self, wpose, waypoints: list):
-        self.get_logger().info("Calculando trayectoria para la Copa del Mundo...")
+    # Silueta de un Automóvil (SUV)
+    def car_profile(self, wpose, waypoints: list):
+        self.get_logger().info("Calculando trayectoria para la silueta de automóvil...")
         
-        s = self.size * 1.5 # Factor de escala para hacerla vistosa
-        center_x = wpose.position.x
+        s = self.size * 1.5 
+        cx = wpose.position.x
         start_y = self.y_h
         
-        # Posicionarse en la esquina inferior izquierda de la base
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.3*s, start_y, self.pen + 0.05)
+        # Posicionarse en la parte trasera del auto (inferior izquierda)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx - 1.0*s, start_y, self.pen + 0.05)
         wpose, waypoints = self.down_pen(wpose, waypoints)
         
-        # 1. Base (Línea horizontal hacia la derecha)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.3*s, start_y, self.pen)
+        # 1. Parachoques trasero (Sube recto)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx - 1.0*s, start_y + 0.4*s, self.pen)
         
-        # 2. Escalón base derecho (Diagonal corta)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.2*s, start_y + 0.2*s, self.pen)
+        # 2. Maletero (Línea horizontal)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx - 0.7*s, start_y + 0.4*s, self.pen)
         
-        # 3. Soporte principal derecho (Curva exterior)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.4*s, start_y + 0.8*s, self.pen)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.5*s, start_y + 1.4*s, self.pen)
+        # 3. Parabrisas trasero (Diagonal hacia arriba)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx - 0.4*s, start_y + 0.9*s, self.pen)
         
-        # 4. Esfera del Mundo (Arco superior calculado con trigonometría)
-        globe_center_y = start_y + 1.5*s
-        globe_radius = 0.5*s
-        # Trazamos el mundo desde 0 grados (derecha) hasta 180 (izquierda)
+        # 4. Techo (Línea horizontal)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx + 0.2*s, start_y + 0.9*s, self.pen)
+        
+        # 5. Parabrisas delantero (Diagonal hacia abajo)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx + 0.6*s, start_y + 0.4*s, self.pen)
+        
+        # 6. Capó / Hood (Línea horizontal)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx + 1.0*s, start_y + 0.4*s, self.pen)
+        
+        # 7. Parachoques delantero (Baja recto)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx + 1.0*s, start_y, self.pen)
+        
+        # 8. Chasis delantero hasta la primera llanta
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx + 0.7*s, start_y, self.pen)
+        
+        # 9. Llanta delantera (Arco trigonométrico de derecha a izquierda)
+        wheel_radius = 0.2*s
         for theta_deg in range(0, 181, 15):
             theta_rad = math.radians(theta_deg)
-            gx = center_x + globe_radius * math.cos(theta_rad)
-            gy = globe_center_y + globe_radius * math.sin(theta_rad)
-            wpose, waypoints = self.set_pen(wpose, waypoints, gx, gy, self.pen)
+            wx = (cx + 0.5*s) + wheel_radius * math.cos(theta_rad)
+            wy = start_y + wheel_radius * math.sin(theta_rad)
+            wpose, waypoints = self.set_pen(wpose, waypoints, wx, wy, self.pen)
             
-        # 5. Soporte principal izquierdo (Baja curvándose hacia adentro)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.4*s, start_y + 0.8*s, self.pen)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.2*s, start_y + 0.2*s, self.pen)
+        # 10. Chasis central (Línea horizontal entre las dos llantas)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx - 0.3*s, start_y, self.pen)
         
-        # 6. Cerrar la silueta (Regresa al punto de inicio)
-        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.3*s, start_y, self.pen)
+        # 11. Llanta trasera (Arco trigonométrico)
+        for theta_deg in range(0, 181, 15):
+            theta_rad = math.radians(theta_deg)
+            wx = (cx - 0.5*s) + wheel_radius * math.cos(theta_rad)
+            wy = start_y + wheel_radius * math.sin(theta_rad)
+            wpose, waypoints = self.set_pen(wpose, waypoints, wx, wy, self.pen)
+            
+        # 12. Cerrar silueta (Hasta el parachoques trasero original)
+        wpose, waypoints = self.set_pen(wpose, waypoints, cx - 1.0*s, start_y, self.pen)
         
         # Levantar la herramienta al finalizar
         wpose, waypoints = self.up_pen(wpose, waypoints)
@@ -176,7 +194,7 @@ class PlanNode(Node):
             figure_function = getattr(self, figure_name)
             waypoints, wpose = figure_function(wpose, waypoints)
             
-            # --- NUEVO: Publicar el trazo para verlo en RViz ---
+            # Publicar el trazo para verlo en RViz
             self.publish_trajectory_marker(waypoints)
             
             self.execute_drawing(waypoints)
@@ -255,8 +273,8 @@ def main(args=None):
     start_pose.orientation.z = 0.0
     start_pose.orientation.w = 0.0
 
-    # Llamamos a nuestra nueva figura compleja
-    node.draw_figure("world_cup", start_pose)
+    # Llamamos a nuestra nueva figura de auto
+    node.draw_figure("car_profile", start_pose)
 
     rclpy.spin(node)
     rclpy.shutdown()
