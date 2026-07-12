@@ -704,7 +704,7 @@ def main(args=None):
     start_pose.orientation.w = 0.0
 
     # ¡Prueba cambiar "AB" por cualquier palabra que tengas programada!
-    node.write_string("DATT", start_pose)
+    node.write_string("RIMP", start_pose)
 
     rclpy.spin(node)
     rclpy.shutdown()
