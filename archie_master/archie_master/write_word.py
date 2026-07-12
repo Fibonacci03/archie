@@ -91,6 +91,45 @@ class WriteWordNode(Node):
         wpose, waypoints = self.move_pen(wpose, waypoints, self.size + self.space, self.y_h)
         return waypoints, wpose
 
+    def world_cup(self, wpose, waypoints: list):
+        self.get_logger().info("Calculando trayectoria para la Copa del Mundo en write_word_node...")
+        
+        s = self.size * 1.5 # Factor de escala
+        center_x = wpose.position.x
+        start_y = self.y_h
+        
+        # Posicionarse en la esquina inferior izquierda
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.3*s, start_y, self.pen + 0.05)
+        wpose, waypoints = self.down_pen(wpose, waypoints)
+        
+        # 1. Base
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.3*s, start_y, self.pen)
+        # 2. Escalón base derecho
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.2*s, start_y + 0.2*s, self.pen)
+        # 3. Soporte derecho
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.4*s, start_y + 0.8*s, self.pen)
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x + 0.5*s, start_y + 1.4*s, self.pen)
+        
+        # 4. Esfera del Mundo
+        globe_center_y = start_y + 1.5*s
+        globe_radius = 0.5*s
+        import math
+        for theta_deg in range(0, 181, 15):
+            theta_rad = math.radians(theta_deg)
+            gx = center_x + globe_radius * math.cos(theta_rad)
+            gy = globe_center_y + globe_radius * math.sin(theta_rad)
+            wpose, waypoints = self.set_pen(wpose, waypoints, gx, gy, self.pen)
+            
+        # 5. Soporte izquierdo
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.4*s, start_y + 0.8*s, self.pen)
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.2*s, start_y + 0.2*s, self.pen)
+        # 6. Cerrar silueta
+        wpose, waypoints = self.set_pen(wpose, waypoints, center_x - 0.3*s, start_y, self.pen)
+        
+        wpose, waypoints = self.up_pen(wpose, waypoints)
+        
+        return waypoints, wpose
+    
     def plan_B(self, wpose, waypoints: list):
 
         wpose, waypoints = self.down_pen(wpose, waypoints)
@@ -685,26 +724,29 @@ class WriteWordNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = WriteWordNode()
+    node = WriteWordNode() # Asegúrate de que este sea el nombre de la clase en tu archivo
 
-    # Esperar a que llegue al menos un joint state antes de planear
-    node.get_logger().info('Esperando joint_states...')
-    while node._latest_joint_state is None:
-        rclpy.spin_once(node, timeout_sec=0.1)
-    node.get_logger().info('Joint states recibido. Iniciando planificación.')
-
-    # Definir la posición de inicio para comenzar a escribir
     start_pose = Pose()
     start_pose.position.x = 0.0
     start_pose.position.y = 0.2
     start_pose.position.z = node.pen + 0.00
     start_pose.orientation.x = 0.0
-    start_pose.orientation.y = 1.0  # Rotación de 180 grados en Y
+    start_pose.orientation.y = 1.0 
     start_pose.orientation.z = 0.0
     start_pose.orientation.w = 0.0
 
-    # ¡Prueba cambiar "AB" por cualquier palabra que tengas programada!
-    node.write_string("RIMP", start_pose)
+    # --- INICIO DE LA MODIFICACIÓN ---
+    import copy
+    waypoints = [copy.deepcopy(start_pose)]
+    wpose = copy.deepcopy(start_pose)
+    
+    # 1. Generamos los puntos de la Copa del Mundo
+    waypoints, wpose = node.world_cup(wpose, waypoints)
+    
+    # 2. Enviamos los puntos al controlador de MoveIt
+    # (Verifica si en esta clase la función se llama execute_drawing o de otra forma)
+    node.execute_drawing(waypoints) 
+    # --- FIN DE LA MODIFICACIÓN ---
 
     rclpy.spin(node)
     rclpy.shutdown()
