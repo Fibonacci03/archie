@@ -260,24 +260,25 @@ class PlanNode(Node):
         except Exception as e:
             self.get_logger().error(f"Error: {e}")
 
-def main(args=None):
-    rclpy.init(args=args)
-    node = PlanNode()
+    def main(args=None):
+        rclpy.init(args=args)
+        node = PlanNode()
 
-    start_pose = Pose()
-    start_pose.position.x = 0.0
-    start_pose.position.y = 0.2
-    start_pose.position.z = node.pen + 0.00
-    start_pose.orientation.x = 0.0
-    start_pose.orientation.y = 1.0 
-    start_pose.orientation.z = 0.0
-    start_pose.orientation.w = 0.0
+        start_pose = Pose()
+        start_pose.position.x = 0.0
+        start_pose.position.y = 0.2
+        start_pose.position.z = node.pen + 0.00
+        start_pose.orientation.x = 0.0
+        start_pose.orientation.y = 1.0 
+        start_pose.orientation.z = 0.0
+        start_pose.orientation.w = 0.0
 
-    # Llamamos a nuestra nueva figura de auto
-    node.draw_figure("car_profile", start_pose)
+        # EL CAMBIO ESTÁ AQUÍ:
+        # Llamamos a nuestra nueva figura de auto
+        node.draw_figure("car_profile", start_pose)
 
-    rclpy.spin(node)
-    rclpy.shutdown()
+        rclpy.spin(node)
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
