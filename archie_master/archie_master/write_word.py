@@ -724,29 +724,23 @@ class WriteWordNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = WriteWordNode() # Asegúrate de que este sea el nombre de la clase en tu archivo
+    
+    # Asegúrate de que este sea el nombre correcto de tu clase
+    node = WriteWordNode() 
 
+    # Definir la posición de inicio
     start_pose = Pose()
     start_pose.position.x = 0.0
     start_pose.position.y = 0.2
     start_pose.position.z = node.pen + 0.00
     start_pose.orientation.x = 0.0
-    start_pose.orientation.y = 1.0 
+    start_pose.orientation.y = 1.0  # Rotación de 180 grados en Y
     start_pose.orientation.z = 0.0
     start_pose.orientation.w = 0.0
 
-    # --- INICIO DE LA MODIFICACIÓN ---
-    import copy
-    waypoints = [copy.deepcopy(start_pose)]
-    wpose = copy.deepcopy(start_pose)
-    
-    # 1. Generamos los puntos de la Copa del Mundo
-    waypoints, wpose = node.world_cup(wpose, waypoints)
-    
-    # 2. Enviamos los puntos al controlador de MoveIt
-    # (Verifica si en esta clase la función se llama execute_drawing o de otra forma)
-    node.execute_drawing(waypoints) 
-    # --- FIN DE LA MODIFICACIÓN ---
+    # --- RESTAURAMOS LA INSTRUCCIÓN ORIGINAL ---
+    node.write_word('RIMP', start_pose)
+    # -------------------------------------------
 
     rclpy.spin(node)
     rclpy.shutdown()
